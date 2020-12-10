@@ -1,0 +1,258 @@
+﻿Build1=Default,anywheresoftware.b4a.samples.tabhost
+File1=alar1.png
+File10=page3.bal
+File11=rest1.png
+File12=rest2.png
+File2=alar2.png
+File3=conf1.png
+File4=conf2.png
+File5=ic.png
+File6=ic_selected.png
+File7=main.bal
+File8=page1.bal
+File9=page2.bal
+FileGroup1=Default Group
+FileGroup10=Default Group
+FileGroup11=Default Group
+FileGroup12=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+FileGroup6=Default Group
+FileGroup7=Default Group
+FileGroup8=Default Group
+FileGroup9=Default Group
+Group=Default Group
+Library1=core
+ManifestCode=
+NumberOfFiles=12
+NumberOfLibraries=1
+NumberOfModules=0
+Version=9.801
+@EndOfDesignText@
+#Region Module Attributes
+	#FullScreen: False
+	#IncludeTitle: True
+	#ApplicationLabel: TabHost
+	#VersionCode: 1
+	#VersionName: 
+	#SupportedOrientations: unspecified
+	#CanInstallToExternalStorage: True
+#End Region
+
+Sub Process_Globals
+	
+End Sub
+
+Sub Globals
+	Dim TabHost1 As TabHost
+	Dim nd,x, nl, r As Int
+	Dim Button1 As Button
+	Dim Lbel01 As Label
+	Dim Label2 As Label
+	Dim Label3 As Label
+	Dim fa,fm As Long 'Fechas actual e inicial
+	Dim rest As String
+	Dim ini As String
+	Private btnAceptar As Button
+	Private btnCancelar As Button
+	Private Button2 As Button
+	Private Spinner1 As Spinner
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	Activity.LoadLayout("main")
+	Dim rest1, rest2, conf1, conf2, alar1,alar2 As Bitmap
+	rest1 = LoadBitmap(File.DirAssets, "rest1.png")
+	rest2 = LoadBitmap(File.DirAssets, "rest2.png")
+	conf1 = LoadBitmap(File.DirAssets, "conf1.png")
+	conf2 = LoadBitmap(File.DirAssets, "conf2.png")
+	alar1 = LoadBitmap(File.DirAssets, "alar1.png")
+	alar2 = LoadBitmap(File.DirAssets, "alar2.png")
+	
+	TabHost1.AddTabWithIcon ("Resticción", rest2, rest1, "page1") 'load the layout file of each page
+	TabHost1.AddTabWithIcon ("Configuración", conf2, conf1, "page2") 
+	TabHost1.AddTabWithIcon ("Alarmas", alar2, alar1, "page3")
+	Spinner1.Add("0-1")
+	Spinner1.Add("2-3")
+	Spinner1.Add("4-5")
+	Spinner1.Add("6-7")
+	Spinner1.Add("8-9")
+	Spinner1.SelectedIndex=0
+	Button1.Left=50%x-(Button1.Width/2)
+	Button2.Left=50%x-(Button2.Width/2)
+	Archivo
+	MostrarRestriccion(DateTime.Now)
+End Sub
+Sub Activity_Pause (Finishing As Boolean)
+	
+End Sub
+Sub Activity_Resume
+
+End Sub
+Sub TabHost1_TabChanged
+	Activity.Title = TabHost1.CurrentTab
+End Sub
+
+Sub Archivo
+	Dim leer As TextReader
+	If File.Exists(File.DirInternal,"cfgrest.txt") Then
+		leer.Initialize(File.OpenInput (File.DirInternal,"cfgrest.txt"))
+		ini = leer.ReadLine
+		leer.Close
+	Else
+		'Configurar
+	End If
+	
+End Sub
+
+
+Sub btnAceptar_Click
+	Dim escribir As TextWriter
+	'ini=txtRango.Text
+	ini=Spinner1.SelectedItem
+	escribir.Initialize(File.OpenOutput(File.DirInternal,"cfgrest.txt",False))
+	escribir.Writeline(ini)
+	escribir.Close
+	Archivo
+	MostrarRestriccion (DateTime.Now)
+	Msgbox2("Configuración guardada","Configurar","Aceptar","","",Null)
+	TabHost1.CurrentTab=0
+End Sub
+
+Sub MostrarRestriccion (fecha As Long)
+	Dim clr, ltr, ind, i  As Int
+	Dim pla(5),num(5) As String
+	'label6.Width=100%x
+	'ImageView3.left=label6.Width - ImageView3.Width -10
+	'Button1.Left=((label6.Width)-(Button1.Width))/2
+	pla=Array As String("0-1","2-3","4-5","6-7","8-9")
+	For i=0 To 4
+		If pla(i) = ini Then
+			ind=i
+			Exit
+		End If
+	Next
+	For i=0 To 4
+		num(i)=pla(ind)
+		ind=ind+1
+		If ind > 4 Then	ind=0
+	Next
+	'Label4.Text="Indice: " & i
+	fa=fecha
+	nd = DateTime.GetDayOfYear(fa)	' Numero de dia del año
+	nl=0
+	For x=1 To nd
+		fm=DateTime.Add(fa, 0,0,-x)
+		If DateTime.GetDayOfWeek(fm) <> 1 Then  'Si es diferente de domingo
+			nl=nl+1
+		End If
+	Next
+	r=(nl Mod 5)-1
+	If r < 0 Then r=4
+	Label3.Text="Horario restricción [ 7:30 a.m. - 7:30 p.m.]"
+	
+	
+	rest=num(r)
+	If (rest = "0-1") Then
+		clr=Colors.green
+		ltr=Colors.Black
+	End If
+	If (rest = "2-3") Then
+		clr=Colors.White
+		ltr=Colors.Black
+	End If
+	If (rest = "4-5") Then
+		clr=Colors.Magenta
+		ltr=Colors.Black
+	End If
+	If (rest = "6-7") Then
+		clr=Colors.Yellow
+		ltr=Colors.Black
+	End If
+	If (rest = "8-9") Then
+		clr=Colors.Blue
+		ltr=Colors.White
+	End If
+	If (DateTime.GetDayOfWeek(fa)=7) Or (DateTime.GetDayOfWeek(fa)=1) Then
+		rest="No Aplica"
+		clr=Colors.Gray
+	End If
+	Lbel01.Text=DateTime.Now
+	If (fecha = DateTime.Now) Then
+		Lbel01.Text="Restricción para hoy:"
+	Else
+		Lbel01.Text="Restricción para:"
+	End If
+	Label2.Text=FechaLarga(fa)
+	Button1.Text=rest
+	Button1.Color=clr
+	Button1.TextColor=ltr
+End Sub
+
+Sub DiaSemana(i As Int) As String
+	Select Case i
+		Case 1
+			Return "Domingo"
+		Case 2
+			Return "Lunes"
+		Case 3
+			Return "Martes"
+		Case 4
+			Return "Miercoles"
+		Case 5
+			Return "Jueves"
+		Case 6
+			Return "Viernes"
+		Case 7
+			Return "Sabado"
+		Case Else
+			Return " "
+	End Select
+End Sub
+
+Sub FechaLarga (fecha As Long) As String
+	Dim dia, mes, ano As Int
+	Dim nmes, ndia, nfecha As String
+	dia=DateTime.GetDayOfMonth(fecha)
+	mes=DateTime.GetMonth(fecha)
+	ano=DateTime.GetYear(fecha)
+	ndia=DiaSemana(DateTime.GetDayOfWeek(fecha))
+	Select Case mes
+		Case 1
+			nmes="Enero"
+		Case 2
+			nmes="Febrero"
+		Case 3
+			nmes="Marzo"
+		Case 4
+			nmes="Abril"
+		Case 5
+			nmes="Mayo"
+		Case 6
+			nmes="Junio"
+		Case 7
+			nmes="Julio"
+		Case 8
+			nmes="Agosto"
+		Case 9
+			nmes="Septiembre"
+		Case 10
+			nmes="Octubre"
+		Case 11
+			nmes="Noviembre"
+		Case 12
+			nmes="Diciembre"
+	End Select
+	nfecha=ndia & " " & dia & " de " & nmes & " de " & ano
+	Return nfecha
+End Sub
+
+Sub btnCancelar_Click
+	TabHost1.CurrentTab=0
+End Sub
+
+Sub Button2_Click
+	ExitApplication
+End Sub
